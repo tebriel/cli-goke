@@ -79,7 +79,6 @@ func ScrapeMids(songs_dir string) {
 	for {
 		if z.Next() == html.ErrorToken {
 			// Returning io.EOF indicates success.
-			fmt.Println(z.Err())
 			break
 		}
 		tok := z.Token()
