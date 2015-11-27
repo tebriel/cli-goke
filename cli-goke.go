@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/tebriel/cli-goke/scrape"
+	"github.com/tebriel/cli-goke/songs"
+	// "github.com/tebriel/cli-goke/lyrics"
 	"os"
 	"os/user"
 	"path"
@@ -27,7 +28,7 @@ func main() {
 	lyrics_dir := path.Join(homedir, ".cliaoke", "lyrics")
 	if !exists(songs_dir) {
 		os.MkdirAll(songs_dir, os.ModeDir|0755)
-		scrape.ScrapeMids(songs_dir)
+		songs.ScrapeMids(songs_dir)
 	}
 
 	if !exists(lyrics_dir) {

@@ -1,4 +1,4 @@
-package scrape
+package songs
 
 import (
 	"fmt"
