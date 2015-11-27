@@ -28,7 +28,9 @@ func main() {
 	lyrics_dir := path.Join(homedir, ".cliaoke", "lyrics")
 	if !exists(songs_dir) {
 		os.MkdirAll(songs_dir, os.ModeDir|0755)
-		songs.ScrapeMids(songs_dir)
+		songs_body := songs.GetSongsBody()
+		urls := songs.ScrapeMids(songs_body)
+		songs.DownloadMids(urls, songs_dir)
 	}
 
 	if !exists(lyrics_dir) {

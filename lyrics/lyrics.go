@@ -1,14 +1,11 @@
 package lyrics
 
 import (
-	"fmt"
+	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
-	"io"
-	"os"
 	"strings"
 	// "io/ioutil"
 	"net/http"
-	"path"
 	"regexp"
 )
 
@@ -24,51 +21,13 @@ func get_download_uri(slug string) string {
 		}
 		tok := slug_tokens.Token()
 		if tok.Data == "embed" {
-			file_url := get_attr("src", tok.Attr)
+			file_url := webutils.GetAttr("src", tok.Attr)
 			if len(file_url) > 0 {
 				return base_uri + file_url
 			}
 		}
 	}
 	return ""
-}
-
-func get_attr(key string, attrs []html.Attribute) string {
-	for i := 0; i < len(attrs); i++ {
-		if attrs[i].Key == key {
-			return attrs[i].Val
-		}
-	}
-	return ""
-}
-
-func downloadFromUrl(url, dest_dir, dest_file string) {
-	// Took this shamelessly from : https://github.com/thbar/golang-playground/blob/master/download-files.go
-	fileName := path.Join(dest_dir, dest_file)
-	fmt.Println("Downloading", url, "to", fileName)
-
-	// TODO: check file existence first with io.IsExist
-	output, err := os.Create(fileName)
-	if err != nil {
-		fmt.Println("Error while creating", fileName, "-", err)
-		return
-	}
-	defer output.Close()
-
-	response, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Error while downloading", url, "-", err)
-		return
-	}
-	defer response.Body.Close()
-
-	n, err := io.Copy(output, response.Body)
-	if err != nil {
-		fmt.Println("Error while downloading", url, "-", err)
-		return
-	}
-
-	fmt.Println(n, "bytes downloaded.")
 }
 
 func clean_song_name(song_file string) string {
@@ -116,9 +75,9 @@ func ScrapeLyrics(song_file, lyrics_dir string) {
 		tok := z.Token()
 		if tok.Data == "option" {
 			for i := 0; i < len(tok.Attr); i++ {
-				download_slug := get_attr("value", tok.Attr)
+				download_slug := webutils.GetAttr("value", tok.Attr)
 				download_uri := get_download_uri(download_slug)
-				downloadFromUrl(download_uri, lyrics_dir, lyrics_file)
+				webutils.DownloadFromUrl(download_uri, lyrics_dir, lyrics_file)
 			}
 		}
 	}

@@ -4,7 +4,9 @@ import (
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
 	// "io/ioutil"
+	"io"
 	"net/http"
+	"strings"
 )
 
 const base_uri = "http://www.albinoblacksheep.com/audio/midi/"
@@ -28,11 +30,25 @@ func get_download_uri(slug string) string {
 	return ""
 }
 
-func ScrapeMids(songs_dir string) {
+func GetSongsBody() io.ReadCloser {
 	resp, _ := http.Get(base_uri)
-	// body, _ := ioutil.ReadAll(resp.Body)
-	// fmt.Println(string(body))
-	z := html.NewTokenizer(resp.Body)
+	return resp.Body
+}
+
+func DownloadMids(urls []string, songs_dir string) {
+	for i := 0; i < len(urls); i++ {
+		url := urls[i]
+		tokens := strings.Split(url, "/")
+		fileName := tokens[len(tokens)-1]
+		webutils.DownloadFromUrl(url, songs_dir, fileName)
+	}
+}
+
+func ScrapeMids(songs_body io.ReadCloser) []string {
+	var urls []string
+
+	z := html.NewTokenizer(songs_body)
+
 	for {
 		if z.Next() == html.ErrorToken {
 			// Returning io.EOF indicates success.
@@ -43,8 +59,9 @@ func ScrapeMids(songs_dir string) {
 			for i := 0; i < len(tok.Attr); i++ {
 				download_slug := webutils.GetAttr("value", tok.Attr)
 				download_uri := get_download_uri(download_slug)
-				webutils.DownloadFromUrl(download_uri, songs_dir)
+				urls = append(urls, download_uri)
 			}
 		}
 	}
+	return urls
 }

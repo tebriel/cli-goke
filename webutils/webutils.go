@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 )
 
 func GetAttr(key string, attrs []html.Attribute) string {
@@ -19,10 +18,9 @@ func GetAttr(key string, attrs []html.Attribute) string {
 	return ""
 }
 
-func DownloadFromUrl(url, dest_dir string) {
+func DownloadFromUrl(url, dest_dir, dest_file string) {
 	// Took this shamelessly from : https://github.com/thbar/golang-playground/blob/master/download-files.go
-	tokens := strings.Split(url, "/")
-	fileName := path.Join(dest_dir, tokens[len(tokens)-1])
+	fileName := path.Join(dest_dir, dest_file)
 	fmt.Println("Downloading", url, "to", fileName)
 
 	// TODO: check file existence first with io.IsExist
