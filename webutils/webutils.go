@@ -18,6 +18,11 @@ func GetAttr(key string, attrs []html.Attribute) string {
 	return ""
 }
 
+func GetWebBody(uri string) io.ReadCloser {
+	resp, _ := http.Get(uri)
+	return resp.Body
+}
+
 func DownloadFromUrl(url, dest_dir, dest_file string) {
 	// Took this shamelessly from : https://github.com/thbar/golang-playground/blob/master/download-files.go
 	fileName := path.Join(dest_dir, dest_file)

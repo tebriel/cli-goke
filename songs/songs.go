@@ -3,17 +3,14 @@ package songs
 import (
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
-	// "io/ioutil"
 	"io"
-	"net/http"
 	"strings"
 )
 
-const base_uri = "http://www.albinoblacksheep.com/audio/midi/"
+const BaseUri = "http://www.albinoblacksheep.com/audio/midi/"
 
-func get_download_uri(slug string) string {
-	midi_resp, _ := http.Get(base_uri + slug)
-	slug_tokens := html.NewTokenizer(midi_resp.Body)
+func ScrapeMidUrl(mid_body io.ReadCloser) string {
+	slug_tokens := html.NewTokenizer(mid_body)
 	for {
 		if slug_tokens.Next() == html.ErrorToken {
 			// Returning io.EOF indicates success.
@@ -23,16 +20,11 @@ func get_download_uri(slug string) string {
 		if tok.Data == "embed" {
 			file_url := webutils.GetAttr("src", tok.Attr)
 			if len(file_url) > 0 {
-				return base_uri + file_url
+				return file_url
 			}
 		}
 	}
 	return ""
-}
-
-func GetSongsBody() io.ReadCloser {
-	resp, _ := http.Get(base_uri)
-	return resp.Body
 }
 
 func DownloadMids(urls []string, songs_dir string) {
@@ -44,8 +36,19 @@ func DownloadMids(urls []string, songs_dir string) {
 	}
 }
 
-func ScrapeMids(songs_body io.ReadCloser) []string {
+func DoItAll(songs_dir string) {
 	var urls []string
+	songs_body := webutils.GetWebBody(BaseUri)
+	slugs := ScrapeSlugs(songs_body)
+	for i := 0; i < len(slugs); i++ {
+		mid_body := webutils.GetWebBody(BaseUri + slugs[i])
+		urls = append(urls, ScrapeMidUrl(mid_body))
+	}
+	DownloadMids(urls, songs_dir)
+}
+
+func ScrapeSlugs(songs_body io.ReadCloser) []string {
+	var slugs []string
 
 	z := html.NewTokenizer(songs_body)
 
@@ -57,11 +60,12 @@ func ScrapeMids(songs_body io.ReadCloser) []string {
 		tok := z.Token()
 		if tok.Data == "option" {
 			for i := 0; i < len(tok.Attr); i++ {
-				download_slug := webutils.GetAttr("value", tok.Attr)
-				download_uri := get_download_uri(download_slug)
-				urls = append(urls, download_uri)
+				slugs = append(slugs, webutils.GetAttr("value", tok.Attr))
+				// download_slug := webutils.GetAttr("value", tok.Attr)
+				// download_uri := get_download_uri(download_slug)
+				// urls = append(urls, download_uri)
 			}
 		}
 	}
-	return urls
+	return slugs
 }
