@@ -10,6 +10,9 @@ import (
 )
 
 const BaseUri = "http://search.azlyrics.com/search.php?q="
+const TOSToken = "<!-- Usage of azlyrics.com content by any " +
+	"third-party lyrics provider is prohibited by " +
+	"our licensing agreement. Sorry about that. -->"
 
 func get_download_uri(slug string) string {
 	midi_resp, _ := http.Get(BaseUri + slug)
@@ -61,6 +64,37 @@ func ScrapeTopLink(search_body io.ReadCloser) string {
 		}
 	}
 	return ""
+}
+
+func ScrapeLyricsFromPage(lyrics_body io.ReadCloser) []string {
+	var result []string
+	z := html.NewTokenizer(lyrics_body)
+	in_lyrics := false
+	for {
+		if z.Next() == html.ErrorToken {
+			// Returning io.EOF indicates success.
+			break
+		}
+		tok := z.Token()
+		if tok.Type == html.CommentToken {
+			if string(z.Raw()) == TOSToken {
+				in_lyrics = true
+				continue
+				// Yay we found the lyrics
+			}
+		}
+
+		if in_lyrics && tok.Type == html.EndTagToken && tok.Data == "div" {
+			return result
+		}
+
+		if in_lyrics {
+			if tok.Type == html.TextToken {
+				result = append(result, string(z.Raw()))
+			}
+		}
+	}
+	return result
 }
 
 func GetTopLink(song_name string) string {

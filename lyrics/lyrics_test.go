@@ -26,7 +26,7 @@ func TestCreateSaveName(t *testing.T) {
 }
 
 func TestScrapeTopLink(t *testing.T) {
-	file, err := os.Open("./testfiles/wil_smith_wild_wild_west.html")
+	file, err := os.Open("./testfiles/wil_smith_wild_wild_west_search.html")
 	if err != nil {
 		t.Error("Couldn't open test html file")
 	}
@@ -35,5 +35,19 @@ func TestScrapeTopLink(t *testing.T) {
 	expected := "http://www.azlyrics.com/lyrics/willsmith/wildwildwest.html"
 	if actual != expected {
 		t.Errorf("Scraped the wrong url, expected: %s, actual: %s", expected, actual)
+	}
+}
+
+func TestScrapeLyrics(t *testing.T) {
+	file, err := os.Open("./testfiles/wil_smith_wild_wild_west_lyrics.html")
+	if err != nil {
+		t.Error("Couldn't open test html file")
+	}
+	defer file.Close()
+	results := ScrapeLyricsFromPage(file)
+	expected := "\nWild Wild West, Jim West, desperado, rough riderr"
+
+	if results[2] != expected {
+		t.Errorf("Expected: '%s', but got: '%s'", expected, results[2])
 	}
 }
