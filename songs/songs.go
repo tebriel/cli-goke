@@ -3,6 +3,7 @@ package songs
 import (
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"io"
 	"strings"
 )
@@ -17,7 +18,7 @@ func ScrapeMidUrl(mid_body io.ReadCloser) string {
 			return ""
 		}
 		tok := slug_tokens.Token()
-		if tok.Data == "embed" {
+		if tok.DataAtom == atom.Embed {
 			file_url := webutils.GetAttr("src", tok.Attr)
 			if len(file_url) > 0 {
 				return file_url
@@ -58,7 +59,7 @@ func ScrapeSlugs(songs_body io.ReadCloser) []string {
 			break
 		}
 		tok := z.Token()
-		if tok.Data == "option" {
+		if tok.DataAtom == atom.Option {
 			for i := 0; i < len(tok.Attr); i++ {
 				slugs = append(slugs, webutils.GetAttr("value", tok.Attr))
 				// download_slug := webutils.GetAttr("value", tok.Attr)

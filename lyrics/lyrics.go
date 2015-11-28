@@ -3,6 +3,7 @@ package lyrics
 import (
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"io"
 	"net/http"
 	"regexp"
@@ -23,7 +24,7 @@ func get_download_uri(slug string) string {
 			return ""
 		}
 		tok := slug_tokens.Token()
-		if tok.Data == "embed" {
+		if tok.DataAtom == atom.Embed {
 			file_url := webutils.GetAttr("src", tok.Attr)
 			if len(file_url) > 0 {
 				return BaseUri + file_url
@@ -54,9 +55,9 @@ func ScrapeTopLink(search_body io.ReadCloser) string {
 			break
 		}
 		tok := z.Token()
-		if tok.Data == "td" && tok.Type == html.StartTagToken {
+		if tok.DataAtom == atom.Td && tok.Type == html.StartTagToken {
 			td_started = true
-		} else if tok.Data == "a" && tok.Type == html.StartTagToken {
+		} else if tok.DataAtom == atom.A && tok.Type == html.StartTagToken {
 			if td_started {
 				href := webutils.GetAttr("href", tok.Attr)
 				return href
@@ -84,7 +85,7 @@ func ScrapeLyricsFromPage(lyrics_body io.ReadCloser) []string {
 			}
 		}
 
-		if in_lyrics && tok.Type == html.EndTagToken && tok.Data == "div" {
+		if in_lyrics && tok.Type == html.EndTagToken && tok.DataAtom == atom.Div {
 			return result
 		}
 
@@ -114,7 +115,7 @@ func ScrapeLyrics(song_file, lyrics_dir string) {
 			break
 		}
 		tok := z.Token()
-		if tok.Data == "option" {
+		if tok.DataAtom == atom.Option {
 			for i := 0; i < len(tok.Attr); i++ {
 				download_slug := webutils.GetAttr("value", tok.Attr)
 				download_uri := get_download_uri(download_slug)
