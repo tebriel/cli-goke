@@ -26,7 +26,7 @@ func TestCreateSaveName(t *testing.T) {
 }
 
 func TestScrapeTopLink(t *testing.T) {
-	file, err := os.Open("./test/fixtures/wil_smith_wild_wild_west_search.html")
+	file, err := os.Open("../test/fixtures/wil_smith_wild_wild_west_search.html")
 	if err != nil {
 		t.Error("Couldn't open test html file")
 	}
@@ -39,7 +39,7 @@ func TestScrapeTopLink(t *testing.T) {
 }
 
 func TestScrapeLyrics(t *testing.T) {
-	file, err := os.Open("./test/fixtures/wil_smith_wild_wild_west_lyrics.html")
+	file, err := os.Open("../test/fixtures/wil_smith_wild_wild_west_lyrics.html")
 	if err != nil {
 		t.Error("Couldn't open test html file")
 	}
