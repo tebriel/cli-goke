@@ -6,7 +6,7 @@ import (
 )
 
 func TestScrapeSlugs(t *testing.T) {
-	file, err := os.Open("./testfiles/songs.html")
+	file, err := os.Open("./test/fixtures/songs.html")
 	if err != nil {
 		t.Error("Couldn't open test html file")
 	}
@@ -18,7 +18,7 @@ func TestScrapeSlugs(t *testing.T) {
 }
 
 func TestScrapeMidUrl(t *testing.T) {
-	file, err := os.Open("./testfiles/2pac.html")
+	file, err := os.Open("./test/fixtures/2pac.html")
 	if err != nil {
 		t.Error("Couldn't open test html file")
 	}
