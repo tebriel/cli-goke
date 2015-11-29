@@ -5,7 +5,9 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 	"io"
-	"net/http"
+	"log"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -14,25 +16,6 @@ const BaseUri = "http://search.azlyrics.com/search.php?q="
 const TOSToken = "<!-- Usage of azlyrics.com content by any " +
 	"third-party lyrics provider is prohibited by " +
 	"our licensing agreement. Sorry about that. -->"
-
-func get_download_uri(slug string) string {
-	midi_resp, _ := http.Get(BaseUri + slug)
-	slug_tokens := html.NewTokenizer(midi_resp.Body)
-	for {
-		if slug_tokens.Next() == html.ErrorToken {
-			// Returning io.EOF indicates success.
-			return ""
-		}
-		tok := slug_tokens.Token()
-		if tok.DataAtom == atom.Embed {
-			file_url := webutils.GetAttr("src", tok.Attr)
-			if len(file_url) > 0 {
-				return BaseUri + file_url
-			}
-		}
-	}
-	return ""
-}
 
 func CleanSongName(song_file string) string {
 	non_chars := regexp.MustCompile("[^a-zA-Z0-9\n.]")
@@ -47,6 +30,7 @@ func CreateSaveName(song_file string) string {
 }
 
 func ScrapeTopLink(search_body io.ReadCloser) string {
+	log.Println("Scraping for top link")
 	z := html.NewTokenizer(search_body)
 	td_started := false
 	for {
@@ -68,6 +52,7 @@ func ScrapeTopLink(search_body io.ReadCloser) string {
 }
 
 func ScrapeLyricsFromPage(lyrics_body io.ReadCloser) []string {
+	log.Println("Scraping Lyrics from Page")
 	var result []string
 	z := html.NewTokenizer(lyrics_body)
 	in_lyrics := false
@@ -101,26 +86,29 @@ func ScrapeLyricsFromPage(lyrics_body io.ReadCloser) []string {
 func GetTopLink(song_name string) string {
 	query := CleanSongName(song_name)
 	song_query := BaseUri + query
-	webutils.GetWebBody(song_query)
-	return "alink"
+	log.Printf("Getting top lyrics result link for %s\n", query)
+	search_body := webutils.GetWebBody(song_query)
+	return ScrapeTopLink(search_body)
+}
+
+func LyricsAlreadyDownloaded(song_file, lyrics_dir string) bool {
+	save_name := CreateSaveName(song_file)
+	return webutils.FileExists(path.Join(lyrics_dir, save_name))
 }
 
 func ScrapeLyrics(song_file, lyrics_dir string) {
-	lyrics_file := CreateSaveName(song_file)
-	resp, _ := http.Get(BaseUri)
-	z := html.NewTokenizer(resp.Body)
-	for {
-		if z.Next() == html.ErrorToken {
-			// Returning io.EOF indicates success.
-			break
-		}
-		tok := z.Token()
-		if tok.DataAtom == atom.Option {
-			for i := 0; i < len(tok.Attr); i++ {
-				download_slug := webutils.GetAttr("value", tok.Attr)
-				download_uri := get_download_uri(download_slug)
-				webutils.DownloadFromUrl(download_uri, lyrics_dir, lyrics_file)
-			}
-		}
+	save_name := CreateSaveName(song_file)
+	if LyricsAlreadyDownloaded(song_file, lyrics_dir) {
+		return
+	}
+	top_link := GetTopLink(song_file)
+	if top_link == "" {
+		return
+	}
+	lyrics_page := webutils.GetWebBody(top_link)
+	lyrics := ScrapeLyricsFromPage(lyrics_page)
+	lyrics_file, _ := os.Create(path.Join(lyrics_dir, save_name))
+	for i := 0; i < len(lyrics); i++ {
+		lyrics_file.WriteString(lyrics[i])
 	}
 }

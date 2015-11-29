@@ -4,10 +4,24 @@ import (
 	"fmt"
 	"golang.org/x/net/html"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
 )
+
+// Taken from http://stackoverflow.com/questions/10510691/how-to-check-whether-a-file-or-directory-denoted-by-a-path-exists-in-golang
+// exists returns whether the given file or directory exists or not
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
 
 func GetAttr(key string, attrs []html.Attribute) string {
 	for i := 0; i < len(attrs); i++ {
@@ -19,7 +33,11 @@ func GetAttr(key string, attrs []html.Attribute) string {
 }
 
 func GetWebBody(uri string) io.ReadCloser {
-	resp, _ := http.Get(uri)
+	resp, err := http.Get(uri)
+	if err != nil {
+		log.Printf("Error scraping lyrics: %s\n", err)
+		return nil
+	}
 	return resp.Body
 }
 
