@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/tebriel/cli-goke/lyrics"
+	// "github.com/tebriel/cli-goke/lyrics"
 	"github.com/tebriel/cli-goke/songs"
 	"github.com/tebriel/cli-goke/webutils"
 	"os"
@@ -21,6 +21,6 @@ func main() {
 
 	if !webutils.FileExists(lyrics_dir) {
 		os.MkdirAll(lyrics_dir, os.ModeDir|0755)
+		// lyrics.ScrapeLyrics("2Pac_-_California.mid", lyrics_dir)
 	}
-	lyrics.ScrapeLyrics("2Pac_-_California.mid", lyrics_dir)
 }
