@@ -1,10 +1,12 @@
 package songs
 
 import (
+	"fmt"
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -46,6 +48,19 @@ func DoItAll(songs_dir string) {
 		urls = append(urls, ScrapeMidUrl(mid_body))
 	}
 	DownloadMids(urls, songs_dir)
+}
+
+func PrintAllSongs(songs_dir string) {
+	file_infos, _ := ioutil.ReadDir(songs_dir)
+	for i := 0; i < len(file_infos); i++ {
+		a_file := file_infos[i]
+		if a_file.IsDir() {
+			continue
+		}
+
+		fmt.Println(file_infos[i].Name())
+	}
+
 }
 
 func ScrapeSlugs(songs_body io.ReadCloser) []string {
