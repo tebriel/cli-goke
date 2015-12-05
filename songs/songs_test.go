@@ -26,6 +26,6 @@ func TestScrapeMidUrl(t *testing.T) {
 	url := ScrapeMidUrl(file)
 	expected := "http://media3.albinoblacksheep.com/albino_midi/2Pac_-_Until_The_End_Of_Time.mid"
 	if url != expected {
-		t.Error("Url wasn't right expected: ", expected, " actual: ", url)
+		t.Error("Url wasn't right, expected: ", expected, " actual: ", url)
 	}
 }

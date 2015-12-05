@@ -21,8 +21,8 @@ func ScrapeMidUrl(mid_body io.ReadCloser) string {
 		}
 		tok := slug_tokens.Token()
 		if tok.DataAtom == atom.Embed {
-			file_url := webutils.GetAttr("src", tok.Attr)
-			if len(file_url) > 0 {
+			file_url, err := webutils.GetAttr("src", tok.Attr)
+			if err == nil && file_url != "" {
 				return file_url
 			}
 		}
@@ -31,8 +31,7 @@ func ScrapeMidUrl(mid_body io.ReadCloser) string {
 }
 
 func DownloadMids(urls []string, songs_dir string) {
-	for i := 0; i < len(urls); i++ {
-		url := urls[i]
+	for _, url := range urls {
 		tokens := strings.Split(url, "/")
 		fileName := tokens[len(tokens)-1]
 		webutils.DownloadFromUrl(url, songs_dir, fileName)
@@ -43,8 +42,8 @@ func DoItAll(songs_dir string) {
 	var urls []string
 	songs_body := webutils.GetWebBody(BaseUri)
 	slugs := ScrapeSlugs(songs_body)
-	for i := 0; i < len(slugs); i++ {
-		mid_body := webutils.GetWebBody(BaseUri + slugs[i])
+	for _, slug := range slugs {
+		mid_body := webutils.GetWebBody(BaseUri + slug)
 		urls = append(urls, ScrapeMidUrl(mid_body))
 	}
 	DownloadMids(urls, songs_dir)
@@ -52,15 +51,13 @@ func DoItAll(songs_dir string) {
 
 func PrintAllSongs(songs_dir string) {
 	file_infos, _ := ioutil.ReadDir(songs_dir)
-	for i := 0; i < len(file_infos); i++ {
-		a_file := file_infos[i]
+	for _, a_file := range file_infos {
 		if a_file.IsDir() {
 			continue
 		}
 
-		fmt.Println(file_infos[i].Name())
+		fmt.Println(a_file.Name())
 	}
-
 }
 
 func ScrapeSlugs(songs_body io.ReadCloser) []string {
@@ -75,11 +72,10 @@ func ScrapeSlugs(songs_body io.ReadCloser) []string {
 		}
 		tok := z.Token()
 		if tok.DataAtom == atom.Option {
-			for i := 0; i < len(tok.Attr); i++ {
-				slugs = append(slugs, webutils.GetAttr("value", tok.Attr))
-				// download_slug := webutils.GetAttr("value", tok.Attr)
-				// download_uri := get_download_uri(download_slug)
-				// urls = append(urls, download_uri)
+			slug, err := webutils.GetAttr("value", tok.Attr)
+			// Happens when there was no attr found
+			if err == nil && slug != "" {
+				slugs = append(slugs, slug)
 			}
 		}
 	}

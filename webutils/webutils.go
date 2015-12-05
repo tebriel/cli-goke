@@ -10,6 +10,20 @@ import (
 	"path"
 )
 
+// errorString is a trivial implementation of error.
+type errorString struct {
+	s string
+}
+
+func (e *errorString) Error() string {
+	return e.s
+}
+
+// New returns an error that formats as the given text.
+func New(text string) error {
+	return &errorString{text}
+}
+
 // Taken from http://stackoverflow.com/questions/10510691/how-to-check-whether-a-file-or-directory-denoted-by-a-path-exists-in-golang
 // exists returns whether the given file or directory exists or not
 func FileExists(path string) bool {
@@ -23,13 +37,13 @@ func FileExists(path string) bool {
 	return true
 }
 
-func GetAttr(key string, attrs []html.Attribute) string {
+func GetAttr(key string, attrs []html.Attribute) (val string, err error) {
 	for i := 0; i < len(attrs); i++ {
 		if attrs[i].Key == key {
-			return attrs[i].Val
+			return attrs[i].Val, nil
 		}
 	}
-	return ""
+	return "", New("No attribute with that name found.")
 }
 
 func GetWebBody(uri string) io.ReadCloser {

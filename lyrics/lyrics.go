@@ -43,7 +43,7 @@ func ScrapeTopLink(search_body io.ReadCloser) string {
 			td_started = true
 		} else if tok.DataAtom == atom.A && tok.Type == html.StartTagToken {
 			if td_started {
-				href := webutils.GetAttr("href", tok.Attr)
+				href, _ := webutils.GetAttr("href", tok.Attr)
 				return href
 			}
 		}
@@ -108,7 +108,7 @@ func ScrapeLyrics(song_file, lyrics_dir string) {
 	lyrics_page := webutils.GetWebBody(top_link)
 	lyrics := ScrapeLyricsFromPage(lyrics_page)
 	lyrics_file, _ := os.Create(path.Join(lyrics_dir, save_name))
-	for i := 0; i < len(lyrics); i++ {
-		lyrics_file.WriteString(lyrics[i])
+	for _, lyric := range lyrics {
+		lyrics_file.WriteString(lyric)
 	}
 }
