@@ -1,8 +1,8 @@
 package main
 
 import (
-	// "github.com/tebriel/cli-goke/lyrics"
 	"flag"
+	"github.com/tebriel/cli-goke/lyrics"
 	"github.com/tebriel/cli-goke/songs"
 	"github.com/tebriel/cli-goke/webutils"
 	"os"
@@ -36,13 +36,14 @@ func main() {
 		songs.DoItAll(songs_dir)
 	}
 
+	if !webutils.FileExists(lyrics_dir) {
+		os.MkdirAll(lyrics_dir, os.ModeDir|0755)
+	}
+
 	if songsvar {
 		songs.PrintAllSongs(songs_dir)
 		os.Exit(0)
-	}
-
-	if !webutils.FileExists(lyrics_dir) {
-		os.MkdirAll(lyrics_dir, os.ModeDir|0755)
-		// lyrics.ScrapeLyrics("2Pac_-_California.mid", lyrics_dir)
+	} else {
+		lyrics.ScrapeLyrics(sing_song, lyrics_dir)
 	}
 }
