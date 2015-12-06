@@ -10,15 +10,15 @@ import (
 	"path"
 )
 
-var songsvar bool
+var list_songs bool
 var sing_song string
 
 func init_flags() {
-	flag.BoolVar(&songsvar, "songs", false, "Pass this flag to list all the songs")
+	flag.BoolVar(&list_songs, "songs", false, "Pass this flag to list all the songs")
 	flag.StringVar(&sing_song, "sing", "", "Pass the name of a song here to sing it")
 	flag.Parse()
 
-	if !songsvar && sing_song == "" {
+	if !list_songs && sing_song == "" {
 		flag.PrintDefaults()
 	}
 }
@@ -40,7 +40,7 @@ func main() {
 		os.MkdirAll(lyrics_dir, os.ModeDir|0755)
 	}
 
-	if songsvar {
+	if list_songs {
 		songs.PrintAllSongs(songs_dir)
 		os.Exit(0)
 	} else {
