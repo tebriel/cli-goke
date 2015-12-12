@@ -1,6 +1,8 @@
 package lyrics
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/tebriel/cli-goke/webutils"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -10,6 +12,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const BaseUri = "http://search.azlyrics.com/search.php?q="
@@ -98,17 +101,27 @@ func LyricsAlreadyDownloaded(song_file, lyrics_dir string) bool {
 
 func ScrapeLyrics(song_file, lyrics_dir string) {
 	save_name := CreateSaveName(song_file)
-	if LyricsAlreadyDownloaded(song_file, lyrics_dir) {
-		return
-	}
-	top_link := GetTopLink(song_file)
-	if top_link == "" {
-		return
-	}
-	lyrics_page := webutils.GetWebBody(top_link)
-	lyrics := ScrapeLyricsFromPage(lyrics_page)
-	lyrics_file, _ := os.Create(path.Join(lyrics_dir, save_name))
-	for _, lyric := range lyrics {
-		lyrics_file.WriteString(lyric)
+	if !LyricsAlreadyDownloaded(song_file, lyrics_dir) {
+		top_link := GetTopLink(song_file)
+		if top_link == "" {
+			return
+		}
+		lyrics_page := webutils.GetWebBody(top_link)
+		lyrics := ScrapeLyricsFromPage(lyrics_page)
+		lyrics_file, _ := os.Create(path.Join(lyrics_dir, save_name))
+		for _, lyric := range lyrics {
+			lyrics_file.WriteString(lyric)
+		}
+	} else {
+		file, err := os.Open(path.Join(lyrics_dir, save_name))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
